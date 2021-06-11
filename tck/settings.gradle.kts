@@ -4,14 +4,15 @@ includeBuild("../specification")
 
 pluginManagement {
     repositories {
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
     }
     plugins {
         id("com.hivemq.extension") version "${extra["plugin.hivemq-extension.version"]}"
         id("com.github.hierynomus.license-report") version "${extra["plugin.license.version"]}"
         id("com.github.sgtsilvio.gradle.utf8") version "${extra["plugin.utf8.version"]}"
         id("de.undercouch.download") version "${extra["plugin.download.version"]}"
+        id("com.google.protobuf") version "${extra["plugin.protobuf.version"]}"
     }
 }
 

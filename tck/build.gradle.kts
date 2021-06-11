@@ -1,3 +1,6 @@
+import com.google.protobuf.gradle.generateProtoTasks
+import com.google.protobuf.gradle.ofSourceSet
+import com.google.protobuf.gradle.protoc
 import de.undercouch.gradle.tasks.download.Download
 import nl.javadude.gradle.plugins.license.DownloadLicensesExtension.license
 
@@ -7,6 +10,7 @@ plugins {
     id("com.github.hierynomus.license-report")
     id("com.github.sgtsilvio.gradle.utf8")
     id("de.undercouch.download")
+    id("com.google.protobuf")
     //checkstyle
 }
 
@@ -80,6 +84,7 @@ dependencies {
     runtimeOnly("org.junit.jupiter:junit-jupiter-engine:${property("junit-jupiter.version")}")
     implementation("jakarta.annotation:jakarta.annotation-api:${property("jakarta.annotation.version")}")
     implementation("jakarta.validation:jakarta.validation-api:${property("jakarta.validation.version")}")
+    implementation("com.google.protobuf:protobuf-java:${property("protobuf-java.version")}")
 }
 
 
@@ -279,11 +284,22 @@ plugins.withId("java") {
     plugins.apply("com.github.sgtsilvio.gradle.utf8")
 }
 
+protobuf {
+    protobuf.generateProtoTasks {
+        ofSourceSet("main")
+    }
+    //protobuf.generatedFilesBaseDir = projectDir.resolve("src").absolutePath
+}
+
 sourceSets {
     main {
-        java.srcDir(buildDir.resolve("generated/sources/audit/"))
+        java {
+            srcDir(buildDir.resolve("generated/sources/audit"))
+            srcDir(buildDir.resolve("generated/source/proto/main/java/"))
+        }
     }
 }
+
 
 //Fetches created tck-audit file from specification project.
 tasks.register("audit") {

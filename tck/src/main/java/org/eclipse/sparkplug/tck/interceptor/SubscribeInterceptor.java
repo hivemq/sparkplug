@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.sparkplug.tck;
+package org.eclipse.sparkplug.tck.interceptor;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.interceptor.subscribe.SubscribeInboundInterceptor;
@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 public class SubscribeInterceptor implements SubscribeInboundInterceptor {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger("Sparkplug");
+
     private final @NotNull TCK theTCK;
 
     public SubscribeInterceptor(final @NotNull TCK aTCK) {
@@ -37,7 +38,7 @@ public class SubscribeInterceptor implements SubscribeInboundInterceptor {
             final SubscribePacket packet = subscribeInboundInput.getSubscribePacket();
             logger.info("\tTopic {}", packet.getSubscriptions().get(0).getTopicFilter());
 
-            theTCK.subscribe(clientId, packet);
+            theTCK.onClientSubscribe(clientId, packet);
 
         } catch (final Exception e) {
             logger.error("Exception", e);

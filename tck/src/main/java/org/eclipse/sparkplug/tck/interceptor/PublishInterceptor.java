@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.sparkplug.tck;
+package org.eclipse.sparkplug.tck.interceptor;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.interceptor.publish.PublishInboundInterceptor;
@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 public class PublishInterceptor implements PublishInboundInterceptor {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger("Sparkplug");
+
     private final @NotNull TCK theTCK;
 
     public PublishInterceptor(final @NotNull TCK aTCK) {
@@ -70,7 +71,7 @@ public class PublishInterceptor implements PublishInboundInterceptor {
                     }
                 }
             } else
-                theTCK.publish(clientId, packet);
+                theTCK.onClientPublish(clientId, packet);
 
         } catch (final Exception e) {
             logger.error("Exception", e);

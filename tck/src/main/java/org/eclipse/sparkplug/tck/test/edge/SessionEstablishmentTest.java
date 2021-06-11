@@ -22,7 +22,7 @@ import com.hivemq.extension.sdk.api.packets.publish.PublishPacket;
 import com.hivemq.extension.sdk.api.packets.subscribe.SubscribePacket;
 import org.eclipse.sparkplug.tck.sparkplug.Sections;
 import org.eclipse.sparkplug.tck.test.TCK;
-import org.eclipse.sparkplug.tck.test.TCKTest;
+import org.eclipse.sparkplug.tck.test.BaseTCKTest;
 import org.jboss.test.audit.annotations.SpecAssertion;
 import org.jboss.test.audit.annotations.SpecVersion;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import java.util.Optional;
 @SpecVersion(
         spec = "sparkplug",
         version = "3.0.0-SNAPSHOT")
-public class SessionEstablishmentTest extends TCKTest {
+public class SessionEstablishmentTest extends BaseTCKTest {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger("Sparkplug");
 
@@ -102,6 +102,10 @@ public class SessionEstablishmentTest extends TCKTest {
         return testResults;
     }
 
+    public @NotNull String checkNDEATHMessage(final @NotNull String d0) {
+        return "";
+    }
+
 
     public @NotNull Optional<WillPublishPacket> checkWillMessage(final @NotNull ConnectPacket packet) {
         final Optional<WillPublishPacket> willPublishPacketOptional = packet.getWillPublish();
@@ -134,7 +138,7 @@ public class SessionEstablishmentTest extends TCKTest {
     @SpecAssertion(
             section = Sections.OPERATIONAL_BEHAVIOR_EDGE_NODE_SESSION_ESTABLISHMENT,
             id = "message-flow-edge-node-birth-publish-connect")
-    public void connect(@NotNull String clientId, @NotNull ConnectPacket packet) {
+    public void onClientConnect(@NotNull String clientId, @NotNull ConnectPacket packet) {
         logger.info("Primary host session establishment test - connect");
 
         String result = "FAIL";
@@ -152,9 +156,9 @@ public class SessionEstablishmentTest extends TCKTest {
         try {
             myClientId = clientId;
             state = "CONNECTED";
-            if (!willPublishPacketOptional.isPresent())
+            if (willPublishPacketOptional.isEmpty())
                 throw new Exception("Will message is needed");
-            if (packet.getCleanStart() == false)
+            if (!packet.getCleanStart())
                 throw new Exception("Clean start should be true");
             // TODO: what else do we need to check?
             result = "PASS";
@@ -169,7 +173,7 @@ public class SessionEstablishmentTest extends TCKTest {
     @SpecAssertion(
             section = Sections.OPERATIONAL_BEHAVIOR_EDGE_NODE_SESSION_ESTABLISHMENT,
             id = "message-flow-edge-node-birth-publish-subscribe")
-    public void subscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
+    public void onClientSubscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
         logger.info("Edge node session establishment test - subscribe");
 
         if (myClientId.equals(clientId)) {
@@ -198,7 +202,7 @@ public class SessionEstablishmentTest extends TCKTest {
     @SpecAssertion(
             section = Sections.OPERATIONAL_BEHAVIOR_EDGE_NODE_SESSION_ESTABLISHMENT,
             id = "primary-application-state-publish")
-    public void publish(@NotNull String clientId, @NotNull PublishPacket packet) {
+    public void onClientPublish(@NotNull String clientId, @NotNull PublishPacket packet) {
         logger.info("Primary host session establishment test - publish");
 
         if (myClientId.equals(clientId)) {

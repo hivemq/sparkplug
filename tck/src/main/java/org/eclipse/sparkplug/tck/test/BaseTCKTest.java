@@ -30,15 +30,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class TCKTest {
+public abstract class BaseTCKTest {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger("Sparkplug");
 
-    public abstract void connect(final @NotNull String clientId, final @NotNull ConnectPacket packet);
+    public abstract void onClientConnect(final @NotNull String clientId, final @NotNull ConnectPacket packet);
 
-    public abstract void subscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet);
+    public abstract void onClientSubscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet);
 
-    public abstract void publish(final @NotNull String clientId, final @NotNull PublishPacket packet);
+    public abstract void onClientPublish(final @NotNull String clientId, final @NotNull PublishPacket packet);
 
     public abstract void endTest();
 

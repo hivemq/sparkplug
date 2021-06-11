@@ -27,7 +27,7 @@ import com.hivemq.extension.sdk.api.packets.publish.PublishPacket;
 import com.hivemq.extension.sdk.api.packets.subscribe.SubscribePacket;
 import org.eclipse.sparkplug.tck.sparkplug.Sections;
 import org.eclipse.sparkplug.tck.test.TCK;
-import org.eclipse.sparkplug.tck.test.TCKTest;
+import org.eclipse.sparkplug.tck.test.BaseTCKTest;
 import org.jboss.test.audit.annotations.SpecAssertion;
 import org.jboss.test.audit.annotations.SpecVersion;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ import java.util.Optional;
 @SpecVersion(
         spec = "sparkplug",
         version = "3.0.0-SNAPSHOT")
-public class SessionEstablishmentTest extends TCKTest {
+public class SessionEstablishmentTest extends BaseTCKTest {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger("Sparkplug");
 
@@ -144,7 +144,7 @@ public class SessionEstablishmentTest extends TCKTest {
     @SpecAssertion(
             section = Sections.OPERATIONAL_BEHAVIOR_PRIMARY_HOST_APPLICATION_SESSION_ESTABLISHMENT,
             id = "primary-application-death-cert")
-    public void connect(final @NotNull String clientId, final @NotNull ConnectPacket packet) {
+    public void onClientConnect(final @NotNull String clientId, final @NotNull ConnectPacket packet) {
         logger.info("Primary host session establishment test - connect");
 
         String result = "FAIL";
@@ -181,7 +181,7 @@ public class SessionEstablishmentTest extends TCKTest {
     @SpecAssertion(
             section = Sections.OPERATIONAL_BEHAVIOR_PRIMARY_HOST_APPLICATION_SESSION_ESTABLISHMENT,
             id = "primary-application-subscribe")
-    public void subscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
+    public void onClientSubscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
         logger.info("Primary host session establishment test - subscribe");
 
         if (myClientId.equals(clientId)) {
@@ -211,7 +211,7 @@ public class SessionEstablishmentTest extends TCKTest {
     @SpecAssertion(
             section = Sections.COMPONENTS_PRIMARY_HOST_APPLICATION,
             id = "components-ph-state")
-    public void publish(final @NotNull String clientId, final @NotNull PublishPacket packet) {
+    public void onClientPublish(final @NotNull String clientId, final @NotNull PublishPacket packet) {
         logger.info("Primary host session establishment test - publish");
 
         if (myClientId.equals(clientId)) {

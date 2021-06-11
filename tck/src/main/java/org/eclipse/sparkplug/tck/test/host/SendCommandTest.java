@@ -32,7 +32,7 @@ import com.hivemq.extension.sdk.api.services.builder.Builders;
 import com.hivemq.extension.sdk.api.services.publish.Publish;
 import com.hivemq.extension.sdk.api.services.publish.PublishService;
 import org.eclipse.sparkplug.tck.test.TCK;
-import org.eclipse.sparkplug.tck.test.TCKTest;
+import org.eclipse.sparkplug.tck.test.BaseTCKTest;
 import org.jboss.test.audit.annotations.SpecVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ import java.util.List;
 @SpecVersion(
         spec = "sparkplug",
         version = "3.0.0-SNAPSHOT")
-public class SendCommandTest extends TCKTest {
+public class SendCommandTest extends BaseTCKTest {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger("Sparkplug");
 
@@ -107,17 +107,17 @@ public class SendCommandTest extends TCKTest {
     }
 
     @Override
-    public void connect(final @NotNull String clientId, final @NotNull ConnectPacket packet) {
+    public void onClientConnect(final @NotNull String clientId, final @NotNull ConnectPacket packet) {
 
     }
 
     @Override
-    public void subscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
+    public void onClientSubscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
 
     }
 
     @Override
-    public void publish(final @NotNull String clientId, final @NotNull PublishPacket packet) {
+    public void onClientPublish(final @NotNull String clientId, final @NotNull PublishPacket packet) {
 
         if (packet.getTopic().equals("SPARKPLUG_TCK/DEVICE_CONTROL")) {
             final String payload;

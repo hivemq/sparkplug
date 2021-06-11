@@ -23,12 +23,23 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 
+/**
+ * Main class of TCK.
+ * Responsible for creating tests, ending tests and sending the required information to the test classes.
+ */
 public class TCK {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger("Sparkplug");
 
-    private @Nullable TCKTest currentTest = null;
+    private @Nullable BaseTCKTest currentTest = null;
 
+    /**
+     * Creates a new test.
+     *
+     * @param profile Either host or edge
+     * @param test    Name of the test class
+     * @param parms
+     */
     public void newTest(final @NotNull String profile,
                         final @NotNull String test,
                         final @NotNull String @NotNull [] parms) {
@@ -36,9 +47,9 @@ public class TCK {
 
         try {
             final String className = "org.eclipse.sparkplug.tck.test." + profile + "." + test + "Test";
-            final Class<? extends TCKTest> testClass = Class.forName(className).asSubclass(TCKTest.class);
+            final Class<? extends BaseTCKTest> testClass = Class.forName(className).asSubclass(BaseTCKTest.class);
             final Class<?>[] constructorTypes = {this.getClass(), String[].class};
-            final Constructor<? extends TCKTest> constructor = testClass.getConstructor(constructorTypes);
+            final Constructor<? extends BaseTCKTest> constructor = testClass.getConstructor(constructorTypes);
 
             final Object[] parameters = {this, parms};
             currentTest = constructor.newInstance(parameters);
@@ -48,6 +59,9 @@ public class TCK {
         }
     }
 
+    /**
+     * Request to end a test.
+     */
     public void endTest() {
         if (currentTest != null) {
             logger.info("Test end requested for " + currentTest.getName());
@@ -59,21 +73,39 @@ public class TCK {
 
     }
 
-    public void connect(final @NotNull String clientId, final @NotNull ConnectPacket packet) {
+    /**
+     * A client (host or edge) connects to the TCK server.
+     *
+     * @param clientId The MQTT client identifier
+     * @param packet   The MQTT connect packet
+     */
+    public void onClientConnect(final @NotNull String clientId, final @NotNull ConnectPacket packet) {
         if (currentTest != null) {
-            currentTest.connect(clientId, packet);
+            currentTest.onClientConnect(clientId, packet);
         }
     }
 
-    public void subscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
+    /**
+     * A client (host or edge) subscribes to a topic of the TCK server.
+     *
+     * @param clientId The MQTT client identifier
+     * @param packet   The MQTT subscribe packet
+     */
+    public void onClientSubscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
         if (currentTest != null) {
-            currentTest.subscribe(clientId, packet);
+            currentTest.onClientSubscribe(clientId, packet);
         }
     }
 
-    public void publish(final @NotNull String clientId, final @NotNull PublishPacket packet) {
+    /**
+     * A client (host or edge) publishes a message to a topic of the TCK server.
+     *
+     * @param clientId The MQTT client identifier
+     * @param packet   The MQTT publish packet
+     */
+    public void onClientPublish(final @NotNull String clientId, final @NotNull PublishPacket packet) {
         if (currentTest != null) {
-            currentTest.publish(clientId, packet);
+            currentTest.onClientPublish(clientId, packet);
         }
     }
 
