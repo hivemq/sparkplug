@@ -11,15 +11,12 @@
  *    Ian Craggs - initial implementation and documentation
  *******************************************************************************/
 
-package org.eclipse.sparkplug.tck.test.host;
+package org.eclipse.sparkplug.tck.test.edge;
 
 /*
- * This is the primary host Sparkplug receive data test.  Data can be received from edge
+ * This is the edge node Sparkplug send data test.  Data can be sent from edge
  * nodes and devices.
  *
- * We can manufacture some data events to be received by the primary host.
- * But how do we verify that they have been handled correctly?  Can we rely on the
- * user running the tests to report the results accurately?
  *
  */
 
@@ -36,15 +33,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpecVersion(
         spec = "sparkplug",
         version = "3.0.0-SNAPSHOT")
-public class ReceiveDataTest extends TCKTest {
+public class DeviceSessionStartTest extends TCKTest {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger("Sparkplug");
 
-    private final @NotNull HashMap<String, String> testResults = new HashMap<String, String>();
+    private final @NotNull Map<String, String> testResults = new HashMap<>();
     private final @NotNull List<String> testIds = List.of(
             ""
     );
@@ -53,11 +51,11 @@ public class ReceiveDataTest extends TCKTest {
 
     private final @Nullable String host_application_id;
 
-    private @Nullable  String myClientId = null;
     private @Nullable String state = null;
+    private @Nullable String myClientId = null;
 
-    public ReceiveDataTest(final @NotNull TCK aTCK, final @Nullable String @NotNull [] parms) {
-        logger.info("Primary host receive data test");
+    public DeviceSessionStartTest(final @NotNull TCK aTCK, final @Nullable String @NotNull [] parms) {
+        logger.info(getName());
         theTCK = aTCK;
 
         for (final String testId : testIds) {
@@ -78,31 +76,31 @@ public class ReceiveDataTest extends TCKTest {
     }
 
     public @NotNull String getName() {
-        return "ReceiveData";
+        return "Sparkplug Edge Node Send Data Test";
     }
 
     public @NotNull List<String> getTestIds() {
         return testIds;
     }
 
-    public @NotNull HashMap<String, String> getResults() {
+    public @NotNull Map<String, String> getResults() {
         return testResults;
     }
 
     @Override
-    public void connect(final @NotNull String clientId, final @NotNull ConnectPacket packet) {
+    public void connect(@NotNull String clientId, @NotNull ConnectPacket packet) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void subscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
+    public void subscribe(@NotNull String clientId, @NotNull SubscribePacket packet) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void publish(final @NotNull String clientId, final @NotNull PublishPacket packet) {
+    public void publish(@NotNull String clientId, @NotNull PublishPacket packet) {
         // TODO Auto-generated method stub
 
     }

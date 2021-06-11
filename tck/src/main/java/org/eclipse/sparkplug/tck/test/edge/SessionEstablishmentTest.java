@@ -11,12 +11,7 @@
  *    Ian Craggs - initial implementation and documentation
  *******************************************************************************/
 
-package org.eclipse.sparkplug.tck.test.host;
-
-/*
- * This is the primary host Sparkplug session establishment, and re-establishment test.
- *
- */
+package org.eclipse.sparkplug.tck.test.edge;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -49,26 +44,28 @@ public class SessionEstablishmentTest extends TCKTest {
 
     private final @NotNull HashMap<String, String> testResults = new HashMap<>();
     private final @NotNull List<String> testIds = List.of(
-            "host-topic-phid-birth-payload",
-            "host-topic-phid-death-payload",
-            "host-topic-phid-death-qos",
-            "host-topic-phid-death-retain",
-            "primary-application-connect",
-            "primary-application-death-cert",
-            "primary-application-subscribe",
-            "primary-application-state-publish",
-            "components-ph-state"
+            "message-flow-edge-node-birth-publish-connect",
+            "message-flow-edge-node-birth-publish-subscribe"
     );
 
     private final @NotNull TCK theTCK;
 
-    private final @Nullable String host_application_id;
+    private final @Nullable String host_application_id; // The primary host application id to be used
 
     private @Nullable String myClientId = null;
     private @Nullable String state = null;
+    private boolean commands_supported = true; // Are commands supported by the edge node?
+
+    enum TestType {
+        GOOD,
+        HOST_OFFLINE
+    }
+
+    private @NotNull TestType test_type = TestType.GOOD;
+
 
     public SessionEstablishmentTest(final @NotNull TCK aTCK, final @Nullable String @NotNull [] parms) {
-        logger.info("Primary host session establishment test. Parameter: host_application_id");
+        logger.info("Edge Node session establishment test");
         theTCK = aTCK;
 
         for (final String testId : testIds) {
@@ -77,6 +74,11 @@ public class SessionEstablishmentTest extends TCKTest {
 
         host_application_id = parms[0];
         logger.info("Host application id is " + host_application_id);
+
+        if (parms.length > 1 && parms[1].equals("false")) {
+            commands_supported = false;
+        }
+
     }
 
     public void endTest() {
@@ -100,20 +102,11 @@ public class SessionEstablishmentTest extends TCKTest {
         return testResults;
     }
 
-    @SpecAssertion(
-            section = Sections.TOPICS_DEATH_MESSAGE_STATE,
-            id = "host-topic-phid-death-payload")
-    @SpecAssertion(
-            section = Sections.TOPICS_DEATH_MESSAGE_STATE,
-            id = "host-topic-phid-death-qos")
-    @SpecAssertion(
-            section = Sections.TOPICS_DEATH_MESSAGE_STATE,
-            id = "host-topic-phid-death-retain")
+
     public @NotNull Optional<WillPublishPacket> checkWillMessage(final @NotNull ConnectPacket packet) {
         final Optional<WillPublishPacket> willPublishPacketOptional = packet.getWillPublish();
-
         if (willPublishPacketOptional.isPresent()) {
-            final WillPublishPacket willPublishPacket = willPublishPacketOptional.get();
+            WillPublishPacket willPublishPacket = willPublishPacketOptional.get();
 
             String result = "FAIL";
             final Optional<ByteBuffer> payload = willPublishPacket.getPayload();
@@ -139,57 +132,52 @@ public class SessionEstablishmentTest extends TCKTest {
 
     @Test
     @SpecAssertion(
-            section = Sections.OPERATIONAL_BEHAVIOR_PRIMARY_HOST_APPLICATION_SESSION_ESTABLISHMENT,
-            id = "primary-application-connect")
-    @SpecAssertion(
-            section = Sections.OPERATIONAL_BEHAVIOR_PRIMARY_HOST_APPLICATION_SESSION_ESTABLISHMENT,
-            id = "primary-application-death-cert")
-    public void connect(final @NotNull String clientId, final @NotNull ConnectPacket packet) {
+            section = Sections.OPERATIONAL_BEHAVIOR_EDGE_NODE_SESSION_ESTABLISHMENT,
+            id = "message-flow-edge-node-birth-publish-connect")
+    public void connect(@NotNull String clientId, @NotNull ConnectPacket packet) {
         logger.info("Primary host session establishment test - connect");
 
         String result = "FAIL";
-
-        final Optional<WillPublishPacket> willPublishPacketOptional = checkWillMessage(packet);
+        Optional<WillPublishPacket> willPublishPacketOptional = null;
         try {
+            willPublishPacketOptional = checkWillMessage(packet);
             if (willPublishPacketOptional.isPresent()) {
                 result = "PASS";
             }
-            testResults.put("primary-application-death-cert", result);
+            //testResults.put("primary-application-death-cert", result);
         } catch (final Exception e) {
             logger.info("Exception", e);
         }
 
         try {
-            if (willPublishPacketOptional.isEmpty()) {
-                throw new Exception("Will message is needed");
-            }
-            if (!packet.getCleanStart()) {
-                throw new Exception("Clean start should be true");
-            }
-            // TODO: what else do we need to check?
-            result = "PASS";
             myClientId = clientId;
             state = "CONNECTED";
-        } catch (final Exception e) {
+            if (!willPublishPacketOptional.isPresent())
+                throw new Exception("Will message is needed");
+            if (packet.getCleanStart() == false)
+                throw new Exception("Clean start should be true");
+            // TODO: what else do we need to check?
+            result = "PASS";
+        } catch (Exception e) {
             logger.info("Test failed " + e.getMessage());
             result = "FAIL " + e.getMessage();
         }
-        testResults.put("primary-application-connect", result);
+        testResults.put("message-flow-edge-node-birth-publish-connect", result);
     }
 
     @Test
     @SpecAssertion(
-            section = Sections.OPERATIONAL_BEHAVIOR_PRIMARY_HOST_APPLICATION_SESSION_ESTABLISHMENT,
-            id = "primary-application-subscribe")
+            section = Sections.OPERATIONAL_BEHAVIOR_EDGE_NODE_SESSION_ESTABLISHMENT,
+            id = "message-flow-edge-node-birth-publish-subscribe")
     public void subscribe(final @NotNull String clientId, final @NotNull SubscribePacket packet) {
-        logger.info("Primary host session establishment test - subscribe");
+        logger.info("Edge node session establishment test - subscribe");
 
         if (myClientId.equals(clientId)) {
             String result = "FAIL";
             try {
                 if (!state.equals("CONNECTED"))
                     throw new Exception("State should be connected");
-                if (!packet.getSubscriptions().get(0).getTopicFilter().equals("spAv1.0/#"))
+                if (!packet.getSubscriptions().get(0).getTopicFilter().equals("STATE/" + host_application_id))
                     throw new Exception("Topic string wrong");
                 // TODO: what else do we need to check?
                 result = "PASS";
@@ -197,21 +185,20 @@ public class SessionEstablishmentTest extends TCKTest {
             } catch (Exception e) {
                 result = "FAIL " + e.getMessage();
             }
-            testResults.put("primary-application-subscribe", result);
+            testResults.put("message-flow-edge-node-birth-publish-subscribe", result);
+
+
+            // A retained message should have been set on the STATE/host_application_id topic to indicate the
+            // status of the primary host.  The edge node's behavior will vary depending on the result.
+
         }
     }
 
     @Test
     @SpecAssertion(
-            section = Sections.TOPICS_PRIMARY_HOST,
-            id = "host-topic-phid-birth-payload")
-    @SpecAssertion(
-            section = Sections.OPERATIONAL_BEHAVIOR_PRIMARY_HOST_APPLICATION_SESSION_ESTABLISHMENT,
+            section = Sections.OPERATIONAL_BEHAVIOR_EDGE_NODE_SESSION_ESTABLISHMENT,
             id = "primary-application-state-publish")
-    @SpecAssertion(
-            section = Sections.COMPONENTS_PRIMARY_HOST_APPLICATION,
-            id = "components-ph-state")
-    public void publish(final @NotNull String clientId, final @NotNull PublishPacket packet) {
+    public void publish(@NotNull String clientId, @NotNull PublishPacket packet) {
         logger.info("Primary host session establishment test - publish");
 
         if (myClientId.equals(clientId)) {
@@ -219,10 +206,6 @@ public class SessionEstablishmentTest extends TCKTest {
             try {
                 if (!state.equals("SUBSCRIBED"))
                     throw new Exception("State should be subscribed");
-
-                String topic = packet.getTopic();
-                if (!topic.equals("STATE/" + host_application_id))
-                    throw new Exception("Topic should be STATE/host_application_id");
 
                 String payload = null;
                 ByteBuffer bpayload = packet.getPayload().orElseGet(null);
@@ -235,21 +218,14 @@ public class SessionEstablishmentTest extends TCKTest {
                 // TODO: what else do we need to check?
                 result = "PASS";
                 state = "PUBLISHED";
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 result = "FAIL " + e.getMessage();
             }
             testResults.put("primary-application-state-publish", result);
-            testResults.put("host-topic-phid-birth-payload", result);
-            testResults.put("components-ph-state", result);
         }
 
-        // TODO: now we can disconnnect the client and allow it to reconnect and go throught the
-        // session re-establishment phases.  It would be nice to be able to do this at after a 
-        // short arbitrary interval, but I haven't worked out a good way of doing that yet (assuming
-        // that a sleep here is not a good idea).  Using a PING interceptor could be one way but
-        // we probably can't rely on any particular keepalive interval values.
-
         theTCK.endTest();
+
     }
 
 }

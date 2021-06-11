@@ -334,7 +334,7 @@ tasks.prepareHivemqHome {
 
 tasks.runHivemqWithExtension {
     debugOptions {
-        enabled.set(true)
+        enabled.set(false)
     }
 }
 
