@@ -1,6 +1,3 @@
-import com.google.protobuf.gradle.generateProtoTasks
-import com.google.protobuf.gradle.ofSourceSet
-import com.google.protobuf.gradle.protoc
 import de.undercouch.gradle.tasks.download.Download
 import nl.javadude.gradle.plugins.license.DownloadLicensesExtension.license
 
@@ -284,18 +281,12 @@ plugins.withId("java") {
     plugins.apply("com.github.sgtsilvio.gradle.utf8")
 }
 
-protobuf {
-    protobuf.generateProtoTasks {
-        ofSourceSet("main")
-    }
-    //protobuf.generatedFilesBaseDir = projectDir.resolve("src").absolutePath
-}
 
 sourceSets {
     main {
         java {
             srcDir(buildDir.resolve("generated/sources/audit"))
-            srcDir(buildDir.resolve("generated/source/proto/main/java/"))
+            srcDir(buildDir.resolve("generated/source/proto/main/java"))
         }
     }
 }
